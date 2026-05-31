@@ -1,0 +1,39 @@
+volumes: 
+  user-volume:
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: user-db
+    environment:
+      MYSQL_ROOT_PASSWORD: manager
+      MYSQL_DATABASE: userdata
+    volumes:
+      - user-volume:/var/lib/mysql
+      - ./db/database.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - logistics-network
+  backend:
+    build: ./backend
+    container_name: backend-container
+    depends_on:
+      - mysql
+    ports:
+      - "5000:5000"
+    networks:
+      - logistics-network
+  frontend:
+    build: ./frontend/demoapp
+    container_name: frontend-container
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    networks:
+      - logistics-network
+
+networks:
+  logistics-network:
+    driver: bridge
